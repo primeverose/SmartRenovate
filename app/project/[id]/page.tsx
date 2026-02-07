@@ -983,7 +983,7 @@ export default function ProjectDetails() {
 
                   {/* Return Contingency - All milestones completed */}
                   {(() => {
-                    const allMilestonesCompleted = milestones.every(m => (m.status ?? m[2]) === 5);
+                    const allMilestonesCompleted = milestones.every((m: any) => (m.status ?? m[2]) === 5);
                     const remainingContingency = project.contingency - project.contingencyUsed;
 
                     return allMilestonesCompleted && remainingContingency > 0n && (
@@ -1067,7 +1067,7 @@ export default function ProjectDetails() {
                 <div className="flex items-center justify-between">
                   <span className="text-[#2D4A7C]">Milestones Completed:</span>
                   <span className="font-semibold text-[#1e3254]">
-                    {milestones.filter(m => (m.status ?? m[2]) === 5).length} / {milestones.length}
+                    {milestones.filter((m: any) => (m.status ?? m[2]) === 5).length} / {milestones.length}
                   </span>
                 </div>
 
