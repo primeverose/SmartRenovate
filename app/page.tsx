@@ -122,7 +122,7 @@ export default function Home() {
               </li>
               <li className="flex items-center">
                 <span className="mr-2">✓</span>
-                Cross-chain USDC settlements (Arc → Solana)
+                Cross-chain USDC settlements
               </li>
               <li className="flex items-center">
                 <span className="mr-2">✓</span>
