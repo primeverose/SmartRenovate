@@ -30,9 +30,9 @@ export default function NetworkChecker() {
       console.error('Failed to switch network:', error);
 
       // If switch fails, try to add the network
-      if (typeof window !== 'undefined' && window.ethereum) {
+      if (typeof window !== 'undefined' && (window as any).ethereum) {
         try {
-          await window.ethereum.request({
+          await (window as any).ethereum.request({
             method: 'wallet_addEthereumChain',
             params: [{
               chainId: '0x4CF752', // 5042002 in hex
