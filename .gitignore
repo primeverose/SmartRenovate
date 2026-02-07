@@ -31,7 +31,12 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
+.env.local
+.env.*.local
+
+# Allow .env.example (template file with no secrets)
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +44,44 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# === PROJECT-SPECIFIC TEST/DEBUG FILES ===
+
+# Test and Debug Documentation (internal use only)
+BRIDGE_SETUP.md
+CLEAR_STORAGE.md
+DEBUG_DEPOSIT.md
+TESTING_GUIDE.md
+
+# Debug and Testing Scripts
+check-approve-tx.mjs
+check-bridge-wallet.ts
+check-eth-balance.ts
+check-milestone-status.mjs
+check-project-inspector.mjs
+check-tx-error.mjs
+check-tx.mjs
+decode-events.mjs
+verify-bridge.ts
+create.ts
+setup.ts
+
+# Test Utilities
+public/clear-storage.html
+
+# Hardhat Build Artifacts
+artifacts/
+cache/
+typechain-types/
+
+# Recovery and Temporary Files
+recovery_file_*.dat
+*.recovery
+*.backup
+
+# Additional IDE and OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
