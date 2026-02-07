@@ -58,7 +58,7 @@ export default function ChangeOrder() {
 
         const contingency = projectData.contingency ?? projectData[7]; // contingency
         const contingencyUsed = projectData.contingencyUsed ?? projectData[14]; // contingencyUsed
-        const available = contingency - contingencyUsed;
+        const available: bigint = BigInt(contingency) - BigInt(contingencyUsed);
 
         setAvailableContingency(available);
       } catch (error) {
