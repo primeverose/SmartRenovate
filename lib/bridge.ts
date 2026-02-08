@@ -98,7 +98,7 @@ export async function bridgeUSDCToBase(params: {
 
     // Create adapter for the bridge wallet
     const adapter = createViemAdapterFromPrivateKey({
-      privateKey: privateKey as `0x${string}`,
+      privateKey: privateKey as string,
     });
 
     // Initialize Bridge Kit
@@ -130,27 +130,36 @@ export async function bridgeUSDCToBase(params: {
       to: {
         adapter,
         chain: 'Base_Sepolia' as any,
+        recipientAddress: params.inspectorBaseAddress,
       },
       amount: amountInUsdc,
     });
 
     // Safe JSON stringify that handles BigInt
     const safeStringify = (obj: any) => {
-      return JSON.stringify(obj, (key, value) =>
+      return JSON.stringify(obj, (_key, value) =>
         typeof value === 'bigint' ? value.toString() : value
       , 2);
     };
 
     console.log('✅ Bridge transfer result:', safeStringify(result));
-    console.log('Result type:', typeof result);
-    console.log('Result keys:', result ? Object.keys(result) : 'null');
 
-    // Bridge Kit might return different properties like: hash, txHash, attestationHash, etc.
-    const txHash = (result as any)?.transactionHash
-                || (result as any)?.hash
-                || (result as any)?.txHash
-                || (result as any)?.attestationHash
-                || `DEMO_${Date.now().toString(16)}`;
+    // Check if bridge failed
+    const bridgeState = (result as any)?.state;
+    const steps = (result as any)?.steps;
+    if (bridgeState === 'error') {
+      const failedStep = steps?.find((s: any) => s.state === 'error');
+      const errorMsg = failedStep?.errorMessage || 'Bridge transfer failed';
+      console.error('Bridge failed at step:', failedStep?.name, errorMsg);
+      return { success: false, error: errorMsg };
+    }
+
+    // Extract txHash from steps array (mint > burn fallback)
+    const mintStep = steps?.find((s: any) => s.name === 'mint');
+    const burnStep = steps?.find((s: any) => s.name === 'burn');
+    const txHash = mintStep?.txHash || burnStep?.txHash
+                || (result as any)?.transactionHash
+                || (result as any)?.hash;
 
     console.log('Extracted transaction hash:', txHash);
 
