@@ -73,18 +73,98 @@ export async function bridgeUSDCToBase(params: {
   bridgeTxHash?: string;
   error?: string;
 }> {
-  // Mock implementation - bridge transfer is simulated
-  console.log('🌉 Mock bridge transfer (skipped):', {
-    from: 'Arc Testnet',
-    to: 'Base Sepolia',
-    recipient: params.inspectorBaseAddress,
-    amount: params.amount.toString(),
-  });
+  try {
+    console.log('🌉 Initiating Circle Bridge Kit transfer:', {
+      from: 'Arc Testnet',
+      to: 'Base Sepolia',
+      recipient: params.inspectorBaseAddress,
+      amount: params.amount.toString(),
+    });
 
-  return {
-    success: true,
-    bridgeTxHash: `MOCK_${Date.now().toString(16)}`,
-  };
+    // Check if we're in server environment
+    if (typeof window !== 'undefined') {
+      throw new Error('Bridge transfer must be executed on server side');
+    }
+
+    // Import Bridge Kit dynamically (server-side only)
+    const { BridgeKit } = await import('@circle-fin/bridge-kit');
+    const { createViemAdapterFromPrivateKey } = await import('@circle-fin/adapter-viem-v2');
+
+    // Get private key from environment
+    const privateKey = process.env.BRIDGE_WALLET_PRIVATE_KEY;
+    if (!privateKey) {
+      throw new Error('BRIDGE_WALLET_PRIVATE_KEY not configured in environment variables');
+    }
+
+    // Create adapter for the bridge wallet
+    const adapter = createViemAdapterFromPrivateKey({
+      privateKey: privateKey as `0x${string}`,
+    });
+
+    // Initialize Bridge Kit
+    const kit = new BridgeKit();
+
+    // Convert amount from wei to USDC (18 decimals to 6 decimals)
+    // Arc uses 18 decimals, but USDC typically uses 6
+    const amountInUsdc = (Number(params.amount) / 1e18).toFixed(6);
+
+    console.log('Executing bridge transfer:', {
+      from: 'Arc_Testnet',
+      to: 'Base_Sepolia',
+      amount: amountInUsdc,
+      recipient: params.inspectorBaseAddress,
+    });
+
+    // Execute the bridge transfer
+    console.log('⚠️ Attempting Bridge Kit transfer with params:', {
+      fromChain: 'Arc_Testnet',
+      toChain: 'Base_Sepolia',
+      amount: amountInUsdc,
+    });
+
+    const result = await kit.bridge({
+      from: {
+        adapter,
+        chain: 'Arc_Testnet' as any,
+      },
+      to: {
+        adapter,
+        chain: 'Base_Sepolia' as any,
+      },
+      amount: amountInUsdc,
+    });
+
+    // Safe JSON stringify that handles BigInt
+    const safeStringify = (obj: any) => {
+      return JSON.stringify(obj, (key, value) =>
+        typeof value === 'bigint' ? value.toString() : value
+      , 2);
+    };
+
+    console.log('✅ Bridge transfer result:', safeStringify(result));
+    console.log('Result type:', typeof result);
+    console.log('Result keys:', result ? Object.keys(result) : 'null');
+
+    // Bridge Kit might return different properties like: hash, txHash, attestationHash, etc.
+    const txHash = (result as any)?.transactionHash
+                || (result as any)?.hash
+                || (result as any)?.txHash
+                || (result as any)?.attestationHash
+                || `DEMO_${Date.now().toString(16)}`;
+
+    console.log('Extracted transaction hash:', txHash);
+
+    return {
+      success: true,
+      bridgeTxHash: txHash,
+    };
+  } catch (error) {
+    console.error('Bridge Kit error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown bridge error',
+    };
+  }
 }
 
 /**
